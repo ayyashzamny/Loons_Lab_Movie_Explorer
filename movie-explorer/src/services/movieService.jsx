@@ -15,3 +15,24 @@ export const getTrendingMovies = async () => {
 
   return response.data;
 };
+
+export const getMovieDetails = async (movieId) => {
+  const response = await tmdbClient.get(`/movie/${movieId}`, {
+    params: {
+      append_to_response: 'credits,videos',
+    },
+  });
+
+  return response.data;
+};
+
+export const searchMovies = async (query, page = 1) => {
+  const response = await tmdbClient.get('/search/movie', {
+    params: {
+      query,
+      page,
+    },
+  });
+
+  return response.data;
+};

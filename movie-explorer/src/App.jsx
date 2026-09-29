@@ -1,31 +1,44 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from 'react-router-dom';
+
+import FavoritesProvider from './context/FavoritesContext';
+import ThemeProvider from './context/ThemeContext';
 
 import Navbar from './components/Navbar';
 
 import Home from './pages/Home';
-import MovieDetails from './pages/MovieDetails';
 import Favorites from './pages/Favorites';
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+      <ThemeProvider>
+        <FavoritesProvider>
 
-        <Route
-          path="/movie/:id"
-          element={<MovieDetails />}
-        />
+          <Navbar />
 
-        <Route
-          path="/favorites"
-          element={<Favorites />}
-        />
-      </Routes>
+          <Routes>
+            <Route
+              path="/"
+              element={<Home />}
+            />
+
+            <Route
+              path="/favorites"
+              element={<Favorites />}
+            />
+          </Routes>
+
+        </FavoritesProvider>
+      </ThemeProvider>
+
     </BrowserRouter>
   );
 }
 
 export default App;
+

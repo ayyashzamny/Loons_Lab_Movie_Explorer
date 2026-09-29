@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom';
 
+import { useTheme } from '../context/ThemeContext';
+
 function Navbar() {
+  const {
+    theme,
+    toggleTheme,
+  } = useTheme();
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+
       <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">
+
+        <Link
+          className="navbar-brand fw-bold"
+          to="/"
+        >
           Movie Explorer
         </Link>
 
@@ -24,23 +36,50 @@ function Navbar() {
           className="collapse navbar-collapse"
           id="navbarContent"
         >
-          <ul className="navbar-nav ms-auto">
+
+          <ul className="navbar-nav ms-auto align-items-lg-center">
+
             <li className="nav-item">
-              <Link className="nav-link" to="/">
+              <Link
+                className="nav-link"
+                to="/"
+              >
                 Home
               </Link>
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link" to="/favorites">
+              <Link
+                className="nav-link"
+                to="/favorites"
+              >
                 Favorites
               </Link>
             </li>
+
+            <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={toggleTheme}
+              >
+                {theme === 'light'
+                  ? 'Dark Mode'
+                  : 'Light Mode'}
+              </button>
+
+            </li>
+
           </ul>
+
         </div>
+
       </div>
+
     </nav>
   );
 }
 
 export default Navbar;
+
