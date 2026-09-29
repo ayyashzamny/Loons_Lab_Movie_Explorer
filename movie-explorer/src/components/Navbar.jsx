@@ -1,12 +1,19 @@
+
 import { Link } from 'react-router-dom';
 
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const {
     theme,
     toggleTheme,
   } = useTheme();
+
+  const {
+    user,
+    logout,
+  } = useAuth();
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom">
@@ -39,23 +46,43 @@ function Navbar() {
 
           <ul className="navbar-nav ms-auto align-items-lg-center">
 
-            <li className="nav-item">
-              <Link
-                className="nav-link"
-                to="/"
-              >
-                Home
-              </Link>
-            </li>
+            {user && (
+              <>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link"
+                    to="/"
+                  >
+                    Home
+                  </Link>
+                </li>
 
-            <li className="nav-item">
-              <Link
-                className="nav-link"
-                to="/favorites"
-              >
-                Favorites
-              </Link>
-            </li>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link"
+                    to="/favorites"
+                  >
+                    Favorites
+                  </Link>
+                </li>
+
+                <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
+                  <span className="navbar-text me-3">
+                    Hi, {user.username}
+                  </span>
+                </li>
+
+                <li className="nav-item mt-2 mt-lg-0">
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger"
+                    onClick={logout}
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            )}
 
             <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
 
