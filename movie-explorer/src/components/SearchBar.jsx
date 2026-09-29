@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 function SearchBar({ onSearch }) {
   const [query, setQuery] = useState('');
 
-  // Load the last searched movie from localStorage
   useEffect(() => {
     const lastSearch = localStorage.getItem(
       'lastSearchedMovie'
@@ -20,10 +19,13 @@ function SearchBar({ onSearch }) {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
+      localStorage.removeItem('lastSearchedMovie');
+
+      onSearch('');
+
       return;
     }
 
-    // Save the latest search
     localStorage.setItem(
       'lastSearchedMovie',
       trimmedQuery
@@ -35,6 +37,7 @@ function SearchBar({ onSearch }) {
   return (
     <form onSubmit={handleSubmit} className="mb-5">
       <div className="input-group input-group-lg">
+
         <input
           type="text"
           className="form-control"
@@ -51,6 +54,7 @@ function SearchBar({ onSearch }) {
         >
           Search
         </button>
+
       </div>
     </form>
   );

@@ -8,11 +8,16 @@ function MovieCard({ movie, onMovieClick }) {
 
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : 'https://via.placeholder.com/500x750?text=No+Poster';
+    : null;
 
   const releaseYear = movie.release_date
     ? movie.release_date.substring(0, 4)
     : 'N/A';
+
+  const rating =
+    typeof movie.vote_average === 'number'
+      ? movie.vote_average.toFixed(1)
+      : 'N/A';
 
   const favorite = isFavorite(movie.id);
 
@@ -22,33 +27,49 @@ function MovieCard({ movie, onMovieClick }) {
     toggleFavorite(movie);
   };
 
+  const handleCardClick = () => {
+    onMovieClick(movie.id);
+  };
+
   return (
     <div
-      className="card h-100 shadow-sm"
+      className="card movie-card shadow-sm"
       style={{ cursor: 'pointer' }}
-      onClick={() => onMovieClick(movie.id)}
+      onClick={handleCardClick}
     >
-      <div className="position-relative">
+      <div className="movie-card-image-container">
 
-        <img
-          src={posterUrl}
-          className="card-img-top"
-          alt={movie.title}
-          style={{
-            height: '400px',
-            objectFit: 'cover',
-          }}
-        />
+        {posterUrl ? (
+          <img
+            src={posterUrl}
+            className="movie-card-image"
+            alt={movie.title}
+            loading="lazy"
+          />
+        ) : (
+          <div
+            className="movie-card-image bg-secondary-subtle d-flex align-items-center justify-content-center"
+          >
+            <span className="text-muted">
+              No Poster Available
+            </span>
+          </div>
+        )}
 
         <button
           type="button"
-          className={`btn position-absolute top-0 end-0 m-2 ${
+          className={`favorite-button position-absolute top-0 end-0 m-3 ${
             favorite
               ? 'btn-danger'
               : 'btn-light'
           }`}
           onClick={handleFavoriteClick}
           aria-label={
+            favorite
+              ? 'Remove from favorites'
+              : 'Add to favorites'
+          }
+          title={
             favorite
               ? 'Remove from favorites'
               : 'Add to favorites'
@@ -61,17 +82,21 @@ function MovieCard({ movie, onMovieClick }) {
 
       <div className="card-body">
 
-        <h5 className="card-title">
+        <h5 className="card-title movie-title">
           {movie.title}
         </h5>
 
-        <p className="card-text text-muted mb-1">
-          {releaseYear}
-        </p>
+        <div className="d-flex justify-content-between align-items-center">
 
-        <p className="card-text">
-          ⭐ {movie.vote_average?.toFixed(1)}
-        </p>
+          <span className="text-muted">
+            {releaseYear}
+          </span>
+
+          <span className="movie-rating">
+            ⭐ {rating}
+          </span>
+
+        </div>
 
       </div>
     </div>

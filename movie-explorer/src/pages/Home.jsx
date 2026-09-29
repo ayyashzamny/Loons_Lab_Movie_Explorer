@@ -130,46 +130,56 @@ function Home() {
   // --------------------------------------------------
 
   const handleSearch = async (query) => {
-    try {
-      setSearchQuery(query);
+  try {
+    setSearchError('');
+    setFilterError('');
 
+    setFilters({
+      genre: '',
+      year: '',
+      rating: '',
+    });
+
+    setCurrentPage(1);
+
+    // Empty search → show trending movies
+    if (!query) {
+      setSearchQuery('');
       setIsSearching(true);
 
-      setSearchError('');
-
-      setFilterError('');
-
-      // Reset filters when searching
-      setFilters({
-        genre: '',
-        year: '',
-        rating: '',
-      });
-
-      // Reset pagination
-      setCurrentPage(1);
-
-      const data = await searchMovies(
-        query,
-        1
-      );
+      const data = await getTrendingMovies();
 
       setMovies(data.results);
+      setTotalPages(1);
 
-      setTotalPages(data.total_pages);
-    } catch (error) {
-      console.error(
-        'Search error:',
-        error
-      );
-
-      setSearchError(
-        'Unable to search movies. Please try again.'
-      );
-    } finally {
-      setIsSearching(false);
+      return;
     }
-  };
+
+    // Normal movie search
+    setSearchQuery(query);
+    setIsSearching(true);
+
+    const data = await searchMovies(
+      query,
+      1
+    );
+
+    setMovies(data.results);
+    setTotalPages(data.total_pages);
+
+  } catch (error) {
+    console.error(
+      'Search error:',
+      error
+    );
+
+    setSearchError(
+      'Unable to load movies. Please try again.'
+    );
+  } finally {
+    setIsSearching(false);
+  }
+};
 
   // --------------------------------------------------
   // Apply movie filters

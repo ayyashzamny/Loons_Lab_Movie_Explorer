@@ -16,25 +16,31 @@ function MovieFilters({ onApplyFilters }) {
   const [selectedRating, setSelectedRating] =
     useState('');
 
-  // Load movie genres from TMDb
+  const [isLoadingGenres, setIsLoadingGenres] =
+    useState(false);
+
   useEffect(() => {
     const loadGenres = async () => {
       try {
-        const data = await getMovieGenres();
+        setIsLoadingGenres(true);
 
-        setGenres(data.genres);
+        const data =
+          await getMovieGenres();
+
+        setGenres(data.genres || []);
       } catch (error) {
         console.error(
           'Failed to load genres:',
           error
         );
+      } finally {
+        setIsLoadingGenres(false);
       }
     };
 
     loadGenres();
   }, []);
 
-  // Apply selected filters
   const handleApply = () => {
     onApplyFilters({
       genre: selectedGenre,
@@ -43,7 +49,6 @@ function MovieFilters({ onApplyFilters }) {
     });
   };
 
-  // Clear all filters
   const handleClear = () => {
     setSelectedGenre('');
     setSelectedYear('');
@@ -56,8 +61,8 @@ function MovieFilters({ onApplyFilters }) {
     });
   };
 
-  // Generate years from current year back to 1950
-  const currentYear = new Date().getFullYear();
+  const currentYear =
+    new Date().getFullYear();
 
   const years = [];
 
@@ -69,22 +74,39 @@ function MovieFilters({ onApplyFilters }) {
     years.push(year);
   }
 
-  return (
-    <div className="card shadow-sm mb-5">
-      <div className="card-body">
+  const hasFilters =
+    selectedGenre ||
+    selectedYear ||
+    selectedRating;
 
-        <h5 className="card-title mb-3">
-          Filter Movies
-        </h5>
+  return (
+    <div className="card movie-filters shadow-sm mb-5">
+
+      <div className="card-body p-4">
+
+        <div className="d-flex justify-content-between align-items-center mb-4">
+
+          <div>
+            <h5 className="filter-title mb-1">
+              Filter Movies
+            </h5>
+
+            <p className="text-muted mb-0">
+              Narrow down your movie results
+            </p>
+          </div>
+
+        </div>
 
         <div className="row g-3">
 
           {/* Genre */}
+
           <div className="col-12 col-md-4">
 
             <label
               htmlFor="genre"
-              className="form-label"
+              className="form-label fw-semibold"
             >
               Genre
             </label>
@@ -98,9 +120,12 @@ function MovieFilters({ onApplyFilters }) {
                   event.target.value
                 )
               }
+              disabled={isLoadingGenres}
             >
               <option value="">
-                All Genres
+                {isLoadingGenres
+                  ? 'Loading genres...'
+                  : 'All Genres'}
               </option>
 
               {genres.map((genre) => (
@@ -115,12 +140,13 @@ function MovieFilters({ onApplyFilters }) {
 
           </div>
 
-          {/* Release Year */}
+          {/* Year */}
+
           <div className="col-12 col-md-4">
 
             <label
               htmlFor="year"
-              className="form-label"
+              className="form-label fw-semibold"
             >
               Release Year
             </label>
@@ -151,12 +177,13 @@ function MovieFilters({ onApplyFilters }) {
 
           </div>
 
-          {/* Minimum Rating */}
+          {/* Rating */}
+
           <div className="col-12 col-md-4">
 
             <label
               htmlFor="rating"
-              className="form-label"
+              className="form-label fw-semibold"
             >
               Minimum Rating
             </label>
@@ -200,7 +227,7 @@ function MovieFilters({ onApplyFilters }) {
 
         </div>
 
-        <div className="mt-4 d-flex gap-2">
+        <div className="mt-4 d-flex flex-wrap gap-2">
 
           <button
             type="button"
@@ -214,13 +241,15 @@ function MovieFilters({ onApplyFilters }) {
             type="button"
             className="btn btn-outline-secondary"
             onClick={handleClear}
+            disabled={!hasFilters}
           >
-            Clear
+            Clear Filters
           </button>
 
         </div>
 
       </div>
+
     </div>
   );
 }
