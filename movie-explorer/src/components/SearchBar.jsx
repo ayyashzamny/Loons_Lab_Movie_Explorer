@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 
+import {
+  Box,
+  TextField,
+  Button,
+} from '@mui/material';
+
 function SearchBar({ onSearch }) {
   const [query, setQuery] = useState('');
 
@@ -19,7 +25,9 @@ function SearchBar({ onSearch }) {
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
-      localStorage.removeItem('lastSearchedMovie');
+      localStorage.removeItem(
+        'lastSearchedMovie'
+      );
 
       onSearch('');
 
@@ -35,28 +43,43 @@ function SearchBar({ onSearch }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-5">
-      <div className="input-group input-group-lg">
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{
+        display: 'flex',
+        flexDirection: {
+          xs: 'column',
+          sm: 'row',
+        },
+        gap: 1,
+        marginBottom: 5,
+      }}
+    >
+      <TextField
+        fullWidth
+        label="Search movies"
+        placeholder="Search for a movie..."
+        value={query}
+        onChange={(event) =>
+          setQuery(event.target.value)
+        }
+      />
 
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Search for a movie..."
-          value={query}
-          onChange={(event) =>
-            setQuery(event.target.value)
-          }
-        />
-
-        <button
-          type="submit"
-          className="btn btn-dark"
-        >
-          Search
-        </button>
-
-      </div>
-    </form>
+      <Button
+        type="submit"
+        variant="contained"
+        size="large"
+        sx={{
+          minWidth: {
+            xs: '100%',
+            sm: 110,
+          },
+        }}
+      >
+        Search
+      </Button>
+    </Box>
   );
 }
 

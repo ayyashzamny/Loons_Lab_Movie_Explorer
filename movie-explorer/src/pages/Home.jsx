@@ -1,600 +1,559 @@
+import { useEffect, useState } from 'react';
+
 import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+  Alert,
+  Box,
+  CircularProgress,
+  Container,
+  Typography,
+} from '@mui/material';
+
+import SearchBar from '../components/SearchBar';
+import MovieCard from '../components/MovieCard';
+import MovieFilters from '../components/MovieFilters';
+import MovieModal from '../components/MovieModal';
 
 import {
   getTrendingMovies,
-  getMovieDetails,
   searchMovies,
   discoverMovies,
+  getMovieDetails,
 } from '../services/movieService';
 
-import MovieCard from '../components/MovieCard';
-import MovieModal from '../components/MovieModal';
-import SearchBar from '../components/SearchBar';
-import MovieFilters from '../components/MovieFilters';
-
 function Home() {
-  // Movies displayed on the page
   const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Selected movie for details modal
-  const [selectedMovie, setSelectedMovie] =
-    useState(null);
-
-  // Movie details loading state
-  const [isLoadingDetails, setIsLoadingDetails] =
-    useState(false);
-
-  // Movie details error
-  const [detailsError, setDetailsError] =
-    useState('');
-
-  // Search query
-  const [searchQuery, setSearchQuery] =
-    useState('');
-
-  // Search loading state
-  const [isSearching, setIsSearching] =
-    useState(false);
-
-  // Search error
-  const [searchError, setSearchError] =
-    useState('');
-
-  // Current pagination page
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
-  // Total pages available from TMDb
-  const [totalPages, setTotalPages] =
-    useState(1);
-
-  // Loading more movies
-  const [isLoadingMore, setIsLoadingMore] =
-    useState(false);
-
-  // Current filters
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     genre: '',
     year: '',
     rating: '',
   });
 
-  // Filter loading state
-  const [isFiltering, setIsFiltering] =
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const [error, setError] = useState('');
+
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [movieDetails, setMovieDetails] = useState(null);
+  const [movieDetailsLoading, setMovieDetailsLoading] =
     useState(false);
+  const [movieDetailsError, setMovieDetailsError] = useState('');
 
-  // Filter error
-  const [filterError, setFilterError] =
-    useState('');
+  const hasActiveFilters =
+    filters.genre ||
+    filters.year ||
+    filters.rating;
 
-  // Reference used by IntersectionObserver
-  const observerRef = useRef(null);
+  const isSearching =
+    searchQuery.trim().length > 0;
 
-  // --------------------------------------------------
-  // Load initial movies
-  // --------------------------------------------------
-
-  useEffect(() => {
-    const loadInitialMovies = async () => {
-      const lastSearch =
-        localStorage.getItem(
-          'lastSearchedMovie'
-        );
-
-      try {
-        // Restore previous search
-        if (lastSearch) {
-          setSearchQuery(lastSearch);
-          setIsSearching(true);
-
-          const data = await searchMovies(
-            lastSearch,
-            1
-          );
-
-          setMovies(data.results);
-          setTotalPages(data.total_pages);
-          setCurrentPage(1);
-
-          return;
-        }
-
-        // Otherwise load trending movies
-        const data =
-          await getTrendingMovies();
-
-        setMovies(data.results);
-      } catch (error) {
-        console.error(
-          'Initial movie loading error:',
-          error
-        );
-
-        setSearchError(
-          'Unable to load movies. Please try again.'
-        );
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    loadInitialMovies();
-  }, []);
-
-  // --------------------------------------------------
-  // Search movies
-  // --------------------------------------------------
-
-  const handleSearch = async (query) => {
-  try {
-    setSearchError('');
-    setFilterError('');
-
-    setFilters({
-      genre: '',
-      year: '',
-      rating: '',
-    });
-
-    setCurrentPage(1);
-
-    // Empty search → show trending movies
-    if (!query) {
-      setSearchQuery('');
-      setIsSearching(true);
+  const loadTrendingMovies = async () => {
+    try {
+      setLoading(true);
+      setError('');
 
       const data = await getTrendingMovies();
 
-      setMovies(data.results);
-      setTotalPages(1);
-
-      return;
-    }
-
-    // Normal movie search
-    setSearchQuery(query);
-    setIsSearching(true);
-
-    const data = await searchMovies(
-      query,
-      1
-    );
-
-    setMovies(data.results);
-    setTotalPages(data.total_pages);
-
-  } catch (error) {
-    console.error(
-      'Search error:',
-      error
-    );
-
-    setSearchError(
-      'Unable to load movies. Please try again.'
-    );
-  } finally {
-    setIsSearching(false);
-  }
-};
-
-  // --------------------------------------------------
-  // Apply movie filters
-  // --------------------------------------------------
-
-  const handleApplyFilters = async (
-    newFilters
-  ) => {
-    try {
-      setIsFiltering(true);
-
-      setFilterError('');
-
-      setSearchError('');
-
-      // Clear search mode
-      setSearchQuery('');
-
-      // Save filters
-      setFilters(newFilters);
-
-      // Reset pagination
-      setCurrentPage(1);
-
-      const data = await discoverMovies({
-        ...newFilters,
-        page: 1,
-      });
-
-      setMovies(data.results);
-
-      setTotalPages(data.total_pages);
+      setMovies(data.results || []);
+      setPage(1);
+      setTotalPages(data.total_pages || 1);
     } catch (error) {
-      console.error(
-        'Filter error:',
-        error
+      console.error('Failed to load trending movies:', error);
+
+      setError(
+        'Unable to load movies right now. Please check your connection and try again.'
       );
 
-      setFilterError(
-        'Unable to load filtered movies. Please try again.'
-      );
+      setMovies([]);
     } finally {
-      setIsFiltering(false);
+      setLoading(false);
     }
   };
 
-  // --------------------------------------------------
-  // Load more movies
-  // --------------------------------------------------
-
-  const loadMoreMovies = async () => {
-    // Do not load another page if
-    // another request is already running
-    if (isLoadingMore) {
-      return;
-    }
-
-    // No more pages
-    if (currentPage >= totalPages) {
-      return;
-    }
-
-    // Determine whether we are searching
-    // or filtering
-    const isSearchMode =
-      Boolean(searchQuery);
-
-    const hasActiveFilters =
-      filters.genre ||
-      filters.year ||
-      filters.rating;
-
-    if (!isSearchMode && !hasActiveFilters) {
-      return;
-    }
-
+  const loadMovies = async ({
+    query = searchQuery,
+    appliedFilters = filters,
+    requestedPage = 1,
+    append = false,
+  } = {}) => {
     try {
-      setIsLoadingMore(true);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
 
-      const nextPage =
-        currentPage + 1;
+      setError('');
 
       let data;
 
-      // Search mode
-      if (isSearchMode) {
+      const hasFilters =
+        appliedFilters.genre ||
+        appliedFilters.year ||
+        appliedFilters.rating;
+
+      if (query.trim()) {
         data = await searchMovies(
-          searchQuery,
-          nextPage
+          query.trim(),
+          requestedPage
         );
-      }
-
-      // Filter mode
-      else {
+      } else if (hasFilters) {
         data = await discoverMovies({
-          ...filters,
-          page: nextPage,
+          genre: appliedFilters.genre,
+          year: appliedFilters.year,
+          rating: appliedFilters.rating,
+          page: requestedPage,
         });
+      } else {
+        data = await getTrendingMovies();
       }
 
-      setMovies(
-        (previousMovies) => [
-          ...previousMovies,
-          ...data.results,
-        ]
+      const newMovies = data.results || [];
+
+      setMovies((previousMovies) =>
+        append
+          ? [...previousMovies, ...newMovies]
+          : newMovies
       );
 
-      setCurrentPage(nextPage);
+      setPage(requestedPage);
+      setTotalPages(data.total_pages || 1);
     } catch (error) {
-      console.error(
-        'Load more error:',
-        error
-      );
+      console.error('Failed to load movies:', error);
 
-      setSearchError(
-        'Unable to load more movies. Please try again.'
+      if (!append) {
+        setMovies([]);
+      }
+
+      setError(
+        'Unable to load movies right now. Please try again.'
       );
     } finally {
-      setIsLoadingMore(false);
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  // --------------------------------------------------
-  // Infinite scrolling
-  // --------------------------------------------------
-
   useEffect(() => {
-    const isSearchMode =
-      Boolean(searchQuery);
+    loadTrendingMovies();
+  }, []);
 
-    const hasActiveFilters =
-      filters.genre ||
-      filters.year ||
-      filters.rating;
+  const handleSearch = (query) => {
+    setSearchQuery(query);
 
-    // Infinite scrolling is only needed
-    // for search or filtered results
+    const cleanQuery = query.trim();
+
+    if (!cleanQuery) {
+      loadMovies({
+        query: '',
+        appliedFilters: filters,
+        requestedPage: 1,
+        append: false,
+      });
+
+      return;
+    }
+
+    loadMovies({
+      query: cleanQuery,
+      appliedFilters: {
+        genre: '',
+        year: '',
+        rating: '',
+      },
+      requestedPage: 1,
+      append: false,
+    });
+  };
+
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+
+    setSearchQuery('');
+
+    loadMovies({
+      query: '',
+      appliedFilters: newFilters,
+      requestedPage: 1,
+      append: false,
+    });
+  };
+
+  const handleLoadMore = () => {
     if (
-      !isSearchMode &&
-      !hasActiveFilters
+      loadingMore ||
+      loading ||
+      page >= totalPages
     ) {
       return;
     }
 
-    // No more pages
-    if (currentPage >= totalPages) {
-      return;
-    }
+    loadMovies({
+      query: searchQuery,
+      appliedFilters: filters,
+      requestedPage: page + 1,
+      append: true,
+    });
+  };
 
-    const observer =
-      new IntersectionObserver(
-        (entries) => {
-          if (
-            entries[0].isIntersecting
-          ) {
-            loadMoreMovies();
-          }
-        },
-        {
-          threshold: 1.0,
-        }
-      );
-
-    if (observerRef.current) {
-      observer.observe(
-        observerRef.current
-      );
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    searchQuery,
-    filters,
-    currentPage,
-    totalPages,
-    isLoadingMore,
-  ]);
-
-  // --------------------------------------------------
-  // Open movie details
-  // --------------------------------------------------
-
-  const handleMovieClick = async (
-    movieId
-  ) => {
+  const handleMovieClick = async (movieId) => {
     try {
-      setIsLoadingDetails(true);
+      setSelectedMovie(movieId);
+      setMovieDetails(null);
+      setMovieDetailsError('');
+      setMovieDetailsLoading(true);
 
-      setDetailsError('');
+      const details = await getMovieDetails(movieId);
 
-      setSelectedMovie(null);
-
-      const data =
-        await getMovieDetails(movieId);
-
-      setSelectedMovie(data);
+      setMovieDetails(details);
     } catch (error) {
       console.error(
-        'Movie details error:',
+        'Failed to load movie details:',
         error
       );
 
-      setDetailsError(
+      setMovieDetailsError(
         'Unable to load movie details. Please try again.'
       );
     } finally {
-      setIsLoadingDetails(false);
+      setMovieDetailsLoading(false);
     }
   };
 
-  // --------------------------------------------------
-  // Close movie details modal
-  // --------------------------------------------------
-
   const handleCloseModal = () => {
     setSelectedMovie(null);
-
-    setDetailsError('');
+    setMovieDetails(null);
+    setMovieDetailsError('');
+    setMovieDetailsLoading(false);
   };
 
-  // --------------------------------------------------
-  // Render
-  // --------------------------------------------------
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition =
+        window.innerHeight + window.scrollY;
+
+      const pageHeight =
+        document.documentElement.scrollHeight;
+
+      if (
+        pageHeight - scrollPosition < 500
+      ) {
+        handleLoadMore();
+      }
+    };
+
+    window.addEventListener(
+      'scroll',
+      handleScroll
+    );
+
+    return () => {
+      window.removeEventListener(
+        'scroll',
+        handleScroll
+      );
+    };
+  }, [
+    loadingMore,
+    loading,
+    page,
+    totalPages,
+    searchQuery,
+    filters,
+  ]);
+
+  const getPageTitle = () => {
+    if (isSearching) {
+      return `Search results for "${searchQuery}"`;
+    }
+
+    if (hasActiveFilters) {
+      return 'Filtered Movies';
+    }
+
+    return 'Trending Movies';
+  };
 
   return (
-    <div className="container py-5">
+    <>
+      <Container
+        maxWidth={false}
+        disableGutters
+        sx={{
+          minHeight: 'calc(100vh - 72px)',
 
-      {/* Page heading */}
+          borderLeft: '1px solid',
+          borderRight: '1px solid',
+          borderColor: 'divider',
 
-      <h1 className="text-center mb-2">
-        Movie Explorer
-      </h1>
+          paddingTop: {
+            xs: 3,
+            sm: 4,
+            md: 6,
+          },
 
-      <p className="text-center text-muted mb-4">
-        Discover your next favorite movie
-      </p>
+          paddingBottom: 6,
 
-      {/* Search */}
-
-      <SearchBar
-        onSearch={handleSearch}
-      />
-
-      {/* Filters */}
-
-      <MovieFilters
-        onApplyFilters={
-          handleApplyFilters
-        }
-      />
-
-      {/* Search error */}
-
-      {searchError && (
-        <div className="alert alert-danger">
-          {searchError}
-        </div>
-      )}
-
-      {/* Filter error */}
-
-      {filterError && (
-        <div className="alert alert-danger">
-          {filterError}
-        </div>
-      )}
-
-      {/* Search loading */}
-
-      {isSearching && (
-        <div className="text-center mb-4">
-
-          <div
-            className="spinner-border"
-            role="status"
+          paddingX: {
+            xs: 1.5,
+            sm: 2.5,
+            md: 4,
+            lg: 5,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+          }}
+        >
+          {/* Page Header */}
+          <Box
+            sx={{
+              marginBottom: {
+                xs: 3,
+                md: 4,
+              },
+            }}
           >
-            <span className="visually-hidden">
-              Searching...
-            </span>
-          </div>
+            <Typography
+              variant="h3"
+              component="h1"
+              fontWeight={800}
+              sx={{
+                fontSize: {
+                  xs: '2rem',
+                  sm: '2.5rem',
+                  md: '3rem',
+                },
+                letterSpacing: '-1px',
+                marginBottom: 1,
+              }}
+            >
+              Discover Movies
+            </Typography>
 
-          <p className="mt-2 text-muted">
-            Searching for "{searchQuery}"...
-          </p>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+            >
+              Explore trending movies, search for your
+              favorites, and discover something new.
+            </Typography>
+          </Box>
 
-        </div>
-      )}
+          {/* Search */}
+          <SearchBar
+            onSearch={handleSearch}
+          />
 
-      {/* Filter loading */}
+          {/* Filters */}
+          <MovieFilters
+            onApplyFilters={
+              handleApplyFilters
+            }
+          />
 
-      {isFiltering && (
-        <div className="text-center mb-4">
+          {/* Error */}
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                marginBottom: 4,
+              }}
+            >
+              {error}
+            </Alert>
+          )}
 
-          <div
-            className="spinner-border"
-            role="status"
+          {/* Section Header */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: {
+                xs: 'flex-start',
+                sm: 'center',
+              },
+              justifyContent: 'space-between',
+              flexDirection: {
+                xs: 'column',
+                sm: 'row',
+              },
+              gap: 1,
+              marginBottom: 3,
+            }}
           >
-            <span className="visually-hidden">
-              Filtering...
-            </span>
-          </div>
+            <Typography
+              variant="h5"
+              component="h2"
+              fontWeight={700}
+            >
+              {getPageTitle()}
+            </Typography>
 
-          <p className="mt-2 text-muted">
-            Loading filtered movies...
-          </p>
-
-        </div>
-      )}
-
-      {/* Section heading */}
-
-      {!isSearching &&
-        !isFiltering && (
-          <h2 className="mb-4">
-
-            {searchQuery
-              ? `Search Results for "${searchQuery}"`
-              : filters.genre ||
-                filters.year ||
-                filters.rating
-              ? 'Filtered Movies'
-              : 'Trending Movies'}
-
-          </h2>
-        )}
-
-      {/* Movie grid */}
-
-      {!isSearching &&
-        !isFiltering && (
-          <>
-            {movies.length === 0 ? (
-              <div className="text-center py-5">
-
-                <h3>
-                  No movies found
-                </h3>
-
-                <p className="text-muted">
-                  Try a different search or filter.
-                </p>
-
-              </div>
-            ) : (
-              <div className="row g-4">
-
-                {movies.map((movie) => (
-                  <div
-                    className="col-12 col-sm-6 col-md-4 col-lg-3"
-                    key={movie.id}
-                  >
-                    <MovieCard
-                      movie={movie}
-                      onMovieClick={
-                        handleMovieClick
-                      }
-                    />
-                  </div>
-                ))}
-
-              </div>
+            {!loading && movies.length > 0 && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                {movies.length} movies
+              </Typography>
             )}
-          </>
-        )}
+          </Box>
 
-      {/* Infinite scrolling trigger */}
+          {/* Initial Loading */}
+          {loading && (
+            <Box
+              sx={{
+                minHeight: 400,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+              }}
+            >
+              <CircularProgress />
 
-      {(searchQuery ||
-        filters.genre ||
-        filters.year ||
-        filters.rating) &&
-        currentPage < totalPages && (
-          <div
-            ref={observerRef}
-            className="text-center py-5"
-          >
+              <Typography
+                color="text.secondary"
+              >
+                Loading movies...
+              </Typography>
+            </Box>
+          )}
 
-            {isLoadingMore && (
-              <>
-                <div
-                  className="spinner-border"
-                  role="status"
+          {/* Empty State */}
+          {!loading &&
+            !error &&
+            movies.length === 0 && (
+              <Box
+                sx={{
+                  minHeight: 350,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  border: '1px dashed',
+                  borderColor: 'divider',
+                  borderRadius: 3,
+                  padding: 4,
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  gutterBottom
                 >
-                  <span className="visually-hidden">
-                    Loading more...
-                  </span>
-                </div>
+                  No movies found
+                </Typography>
 
-                <p className="mt-2 text-muted">
-                  Loading more movies...
-                </p>
-              </>
+                <Typography
+                  color="text.secondary"
+                >
+                  Try a different search or adjust
+                  your filters.
+                </Typography>
+              </Box>
             )}
 
-          </div>
-        )}
+          {/* Movie Grid */}
+          {!loading &&
+            movies.length > 0 && (
+              <Box
+                sx={{
+                  display: 'grid',
 
-      {/* Movie details modal */}
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    md: 'repeat(3, minmax(0, 1fr))',
+                    lg: 'repeat(4, minmax(0, 1fr))',
+                  },
 
-      {(isLoadingDetails ||
-        detailsError ||
-        selectedMovie) && (
+                  gap: {
+                    xs: 2,
+                    sm: 2.5,
+                    md: 3,
+                  },
+                }}
+              >
+                {movies.map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    onMovieClick={
+                      handleMovieClick
+                    }
+                  />
+                ))}
+              </Box>
+            )}
+
+          {/* Infinite Scroll Loading */}
+          {loadingMore && (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1.5,
+                paddingTop: 5,
+                paddingBottom: 2,
+              }}
+            >
+              <CircularProgress
+                size={30}
+              />
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                Loading more movies...
+              </Typography>
+            </Box>
+          )}
+
+          {/* End of Results */}
+          {!loading &&
+            !loadingMore &&
+            movies.length > 0 &&
+            page >= totalPages && (
+              <Typography
+                align="center"
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  paddingTop: 5,
+                }}
+              >
+                You've reached the end of the
+                results.
+              </Typography>
+            )}
+        </Box>
+      </Container>
+
+      {/* Movie Details Modal */}
+      {selectedMovie && (
         <MovieModal
-          movie={selectedMovie}
-          loading={isLoadingDetails}
-          error={detailsError}
-          onClose={
-            handleCloseModal
-          }
+          movie={movieDetails}
+          loading={movieDetailsLoading}
+          error={movieDetailsError}
+          onClose={handleCloseModal}
         />
       )}
-
-    </div>
+    </>
   );
 }
 

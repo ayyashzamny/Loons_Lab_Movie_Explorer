@@ -1,142 +1,244 @@
 import { useState } from 'react';
 
 import {
-  getMovieDetails,
-} from '../services/movieService';
-
-import {
-  useFavorites,
-} from '../context/FavoritesContext';
+  Alert,
+  Box,
+  CircularProgress,
+  Container,
+  Typography,
+} from '@mui/material';
 
 import MovieCard from '../components/MovieCard';
 import MovieModal from '../components/MovieModal';
 
+import { useFavorites } from '../context/FavoritesContext';
+
+import { getMovieDetails } from '../services/movieService';
+
 function Favorites() {
-  const {
-    favorites,
-  } = useFavorites();
+  const { favorites } = useFavorites();
 
-  const [
-    selectedMovie,
-    setSelectedMovie,
-  ] = useState(null);
+  const [selectedMovie, setSelectedMovie] =
+    useState(null);
 
-  const [
-    isLoadingDetails,
-    setIsLoadingDetails,
-  ] = useState(false);
+  const [movieDetails, setMovieDetails] =
+    useState(null);
 
-  const [
-    detailsError,
-    setDetailsError,
-  ] = useState('');
+  const [movieDetailsLoading, setMovieDetailsLoading] =
+    useState(false);
 
-  const handleMovieClick = async (
-    movieId
-  ) => {
+  const [movieDetailsError, setMovieDetailsError] =
+    useState('');
+
+  const handleMovieClick = async (movieId) => {
     try {
-      setIsLoadingDetails(true);
+      setSelectedMovie(movieId);
+      setMovieDetails(null);
+      setMovieDetailsError('');
+      setMovieDetailsLoading(true);
 
-      setDetailsError('');
-
-      setSelectedMovie(null);
-
-      const data =
+      const details =
         await getMovieDetails(movieId);
 
-      setSelectedMovie(data);
+      setMovieDetails(details);
     } catch (error) {
       console.error(
-        'Movie details error:',
+        'Failed to load movie details:',
         error
       );
 
-      setDetailsError(
+      setMovieDetailsError(
         'Unable to load movie details. Please try again.'
       );
     } finally {
-      setIsLoadingDetails(false);
+      setMovieDetailsLoading(false);
     }
   };
 
   const handleCloseModal = () => {
     setSelectedMovie(null);
-
-    setDetailsError('');
+    setMovieDetails(null);
+    setMovieDetailsError('');
+    setMovieDetailsLoading(false);
   };
 
   return (
-    <div className="container py-5">
+    <>
+      <Container
+        maxWidth={false}
+        disableGutters
+        sx={{
+          minHeight: 'calc(100vh - 72px)',
 
-      <div className="mb-5">
+          borderLeft: '1px solid',
+          borderRight: '1px solid',
+          borderColor: 'divider',
 
-        <h1 className="mb-2">
-          My Favorites
-        </h1>
+          paddingTop: {
+            xs: 3,
+            sm: 4,
+            md: 6,
+          },
 
-        <p className="text-muted mb-0">
-          Movies you have saved for later.
-        </p>
+          paddingBottom: 6,
 
-      </div>
+          paddingX: {
+            xs: 1.5,
+            sm: 2.5,
+            md: 4,
+            lg: 5,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              marginBottom: {
+                xs: 3,
+                md: 5,
+              },
+            }}
+          >
+            <Typography
+              variant="h3"
+              component="h1"
+              fontWeight={800}
+              sx={{
+                fontSize: {
+                  xs: '2rem',
+                  sm: '2.5rem',
+                  md: '3rem',
+                },
+                letterSpacing: '-1px',
+                marginBottom: 1,
+              }}
+            >
+              My Favorites
+            </Typography>
 
-      {favorites.length === 0 ? (
-        <div className="empty-state">
+            <Typography
+              variant="body1"
+              color="text.secondary"
+            >
+              {favorites.length === 0
+                ? 'Movies you save will appear here.'
+                : `${favorites.length} ${
+                    favorites.length === 1
+                      ? 'movie'
+                      : 'movies'
+                  } saved to your favorites.`}
+            </Typography>
+          </Box>
 
-          <h3>
-            No favorite movies yet
-          </h3>
+          {/* Empty Favorites */}
+          {favorites.length === 0 && (
+            <Box
+              sx={{
+                minHeight: 400,
 
-          <p className="text-muted">
-            Click the heart button on a movie
-            to add it to your favorites.
-          </p>
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
 
-        </div>
-      ) : (
-        <>
+                textAlign: 'center',
 
-          <p className="text-muted mb-4">
-            {favorites.length}{' '}
-            {favorites.length === 1
-              ? 'movie'
-              : 'movies'}{' '}
-            saved
-          </p>
+                border: '1px dashed',
+                borderColor: 'divider',
 
-          <div className="row g-4">
+                borderRadius: 3,
 
-            {favorites.map((movie) => (
-              <div
-                className="col-12 col-sm-6 col-md-4 col-lg-3"
-                key={movie.id}
+                padding: {
+                  xs: 3,
+                  sm: 5,
+                },
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: {
+                    xs: '3rem',
+                    sm: '4rem',
+                  },
+                  lineHeight: 1,
+                  marginBottom: 2,
+                }}
               >
+                ♡
+              </Typography>
+
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                gutterBottom
+              >
+                No favorites yet
+              </Typography>
+
+              <Typography
+                color="text.secondary"
+                sx={{
+                  maxWidth: 450,
+                }}
+              >
+                Explore movies on the home page
+                and add the ones you love to your
+                favorites.
+              </Typography>
+            </Box>
+          )}
+
+          {/* Favorites Grid */}
+          {favorites.length > 0 && (
+            <Box
+              sx={{
+                display: 'grid',
+
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  md: 'repeat(3, minmax(0, 1fr))',
+                  lg: 'repeat(4, minmax(0, 1fr))',
+                },
+
+                gap: {
+                  xs: 2,
+                  sm: 2.5,
+                  md: 3,
+                },
+              }}
+            >
+              {favorites.map((movie) => (
                 <MovieCard
+                  key={movie.id}
                   movie={movie}
                   onMovieClick={
                     handleMovieClick
                   }
                 />
-              </div>
-            ))}
+              ))}
+            </Box>
+          )}
+        </Box>
+      </Container>
 
-          </div>
-
-        </>
-      )}
-
-      {(isLoadingDetails ||
-        detailsError ||
-        selectedMovie) && (
+      {/* Movie Details Modal */}
+      {selectedMovie && (
         <MovieModal
-          movie={selectedMovie}
-          loading={isLoadingDetails}
-          error={detailsError}
+          movie={movieDetails}
+          loading={movieDetailsLoading}
+          error={movieDetailsError}
           onClose={handleCloseModal}
         />
       )}
-
-    </div>
+    </>
   );
 }
 

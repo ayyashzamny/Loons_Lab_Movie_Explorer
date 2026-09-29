@@ -1,3 +1,12 @@
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  IconButton,
+  Box,
+} from '@mui/material';
+
 import { useFavorites } from '../context/FavoritesContext';
 
 function MovieCard({ movie, onMovieClick }) {
@@ -32,74 +41,141 @@ function MovieCard({ movie, onMovieClick }) {
   };
 
   return (
-    <div
-      className="card movie-card shadow-sm"
-      style={{ cursor: 'pointer' }}
+    <Card
       onClick={handleCardClick}
+      sx={{
+        height: '100%',
+        cursor: 'pointer',
+        position: 'relative',
+        overflow: 'hidden',
+        transition:
+          'transform 0.25s ease, box-shadow 0.25s ease',
+
+        '&:hover': {
+          transform: 'translateY(-6px)',
+          boxShadow: 6,
+        },
+      }}
     >
-      <div className="movie-card-image-container">
-
-        {posterUrl ? (
-          <img
-            src={posterUrl}
-            className="movie-card-image"
-            alt={movie.title}
-            loading="lazy"
-          />
-        ) : (
-          <div
-            className="movie-card-image bg-secondary-subtle d-flex align-items-center justify-content-center"
-          >
-            <span className="text-muted">
-              No Poster Available
-            </span>
-          </div>
-        )}
-
-        <button
-          type="button"
-          className={`favorite-button position-absolute top-0 end-0 m-3 ${
-            favorite
-              ? 'btn-danger'
-              : 'btn-light'
-          }`}
-          onClick={handleFavoriteClick}
-          aria-label={
-            favorite
-              ? 'Remove from favorites'
-              : 'Add to favorites'
-          }
-          title={
-            favorite
-              ? 'Remove from favorites'
-              : 'Add to favorites'
-          }
+      {posterUrl ? (
+        <CardMedia
+          component="img"
+          image={posterUrl}
+          alt={movie.title}
+          loading="lazy"
+          sx={{
+            height: {
+              xs: 450,
+              sm: 420,
+            },
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            height: {
+              xs: 450,
+              sm: 420,
+            },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'action.hover',
+          }}
         >
-          {favorite ? '♥' : '♡'}
-        </button>
+          <Typography color="text.secondary">
+            No Poster Available
+          </Typography>
+        </Box>
+      )}
 
-      </div>
+      <IconButton
+        onClick={handleFavoriteClick}
+        aria-label={
+          favorite
+            ? 'Remove from favorites'
+            : 'Add to favorites'
+        }
+        title={
+          favorite
+            ? 'Remove from favorites'
+            : 'Add to favorites'
+        }
+        sx={{
+          position: 'absolute',
+          top: 12,
+          right: 12,
+          width: 42,
+          height: 42,
 
-      <div className="card-body">
+          backgroundColor: favorite
+            ? 'error.main'
+            : 'background.paper',
 
-        <h5 className="card-title movie-title">
+          color: favorite
+            ? 'white'
+            : 'text.primary',
+
+          boxShadow: 2,
+
+          fontSize: '24px',
+          fontWeight: 700,
+
+          '&:hover': {
+            backgroundColor: favorite
+              ? 'error.dark'
+              : 'action.hover',
+
+            transform: 'scale(1.1)',
+          },
+
+          transition: 'transform 0.2s ease',
+        }}
+      >
+        {favorite ? '♥' : '♡'}
+      </IconButton>
+
+      <CardContent>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{
+            fontWeight: 600,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            minHeight: 56,
+            marginBottom: 1,
+          }}
+        >
           {movie.title}
-        </h5>
+        </Typography>
 
-        <div className="d-flex justify-content-between align-items-center">
-
-          <span className="text-muted">
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
             {releaseYear}
-          </span>
+          </Typography>
 
-          <span className="movie-rating">
+          <Typography
+            variant="body2"
+            fontWeight={600}
+          >
             ⭐ {rating}
-          </span>
-
-        </div>
-
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
 

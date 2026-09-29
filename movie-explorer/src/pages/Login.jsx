@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+} from '@mui/material';
+
 import { useAuth } from '../context/AuthContext';
 
 function Login() {
@@ -11,8 +21,6 @@ function Login() {
 
   const [error, setError] = useState('');
 
-  // If the user is already logged in,
-  // redirect them to the home page.
   if (user) {
     return <Navigate to="/" replace />;
   }
@@ -22,7 +30,6 @@ function Login() {
 
     setError('');
 
-    // Validate empty fields
     if (!username.trim() || !password.trim()) {
       setError(
         'Please enter both username and password.'
@@ -31,119 +38,120 @@ function Login() {
       return;
     }
 
-    // Check credentials
     const result = login(
       username.trim(),
       password
     );
 
-    // If credentials are incorrect
     if (!result.success) {
       setError(result.message);
 
       return;
     }
-
-    // Successful login is handled by AuthContext
   };
 
   return (
-    <div className="container">
+    <Box
+      sx={{
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 2,
+      }}
+    >
+      <Card
+        elevation={3}
+        sx={{
+          width: '100%',
+          maxWidth: 420,
+        }}
+      >
+        <CardContent
+          sx={{
+            padding: {
+              xs: 3,
+              sm: 5,
+            },
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            align="center"
+            fontWeight={700}
+            gutterBottom
+          >
+            Movie Explorer
+          </Typography>
 
-      <div className="row justify-content-center align-items-center min-vh-100">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            align="center"
+            sx={{
+              marginBottom: 4,
+            }}
+          >
+            Sign in to continue
+          </Typography>
 
-        <div className="col-12 col-sm-10 col-md-6 col-lg-4">
+          {error && (
+            <Alert
+              severity="error"
+              sx={{
+                marginBottom: 3,
+              }}
+            >
+              {error}
+            </Alert>
+          )}
 
-          <div className="card shadow-sm">
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+          >
+            <TextField
+              fullWidth
+              label="Username"
+              type="text"
+              value={username}
+              onChange={(event) =>
+                setUsername(event.target.value)
+              }
+              placeholder="Enter username"
+              autoComplete="username"
+              margin="normal"
+            />
 
-            <div className="card-body p-4 p-md-5">
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              placeholder="Enter password"
+              autoComplete="current-password"
+              margin="normal"
+              sx={{
+                marginBottom: 3,
+              }}
+            />
 
-              <h1 className="text-center mb-2">
-                Movie Explorer
-              </h1>
-
-              <p className="text-center text-muted mb-4">
-                Sign in to continue
-              </p>
-
-              {error && (
-                <div
-                  className="alert alert-danger"
-                  role="alert"
-                >
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit}>
-
-                {/* Username */}
-                <div className="mb-3">
-
-                  <label
-                    htmlFor="username"
-                    className="form-label"
-                  >
-                    Username
-                  </label>
-
-                  <input
-                    id="username"
-                    type="text"
-                    className="form-control"
-                    value={username}
-                    onChange={(event) =>
-                      setUsername(event.target.value)
-                    }
-                    placeholder="Enter username"
-                    autoComplete="username"
-                  />
-
-                </div>
-
-                {/* Password */}
-                <div className="mb-4">
-
-                  <label
-                    htmlFor="password"
-                    className="form-label"
-                  >
-                    Password
-                  </label>
-
-                  <input
-                    id="password"
-                    type="password"
-                    className="form-control"
-                    value={password}
-                    onChange={(event) =>
-                      setPassword(event.target.value)
-                    }
-                    placeholder="Enter password"
-                    autoComplete="current-password"
-                  />
-
-                </div>
-
-                {/* Login button */}
-                <button
-                  type="submit"
-                  className="btn btn-dark w-100"
-                >
-                  Login
-                </button>
-
-              </form>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              size="large"
+            >
+              Login
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 

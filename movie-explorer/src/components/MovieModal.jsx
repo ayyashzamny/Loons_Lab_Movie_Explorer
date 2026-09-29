@@ -1,3 +1,17 @@
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  Chip,
+  CircularProgress,
+  Alert,
+  IconButton,
+} from '@mui/material';
+
 function MovieModal({
   movie,
   loading,
@@ -5,95 +19,95 @@ function MovieModal({
   onClose,
 }) {
   return (
-    <div
-      className="modal fade show d-block movie-modal-backdrop"
-      tabIndex="-1"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
+    <Dialog
+      open={true}
+      onClose={onClose}
+      fullWidth
+      maxWidth="xl"
+      scroll="paper"
     >
-      <div
-        className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
-        onClick={(event) =>
-          event.stopPropagation()
-        }
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
-        <div className="modal-content">
+        <Typography
+          component="span"
+          variant="h6"
+          fontWeight={600}
+        >
+          {movie?.title || 'Movie Details'}
+        </Typography>
 
-          {/* Header */}
+        <IconButton
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <Typography
+            component="span"
+            sx={{
+              fontSize: '28px',
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </Typography>
+        </IconButton>
+      </DialogTitle>
 
-          <div className="modal-header">
+      <DialogContent dividers>
+        {loading && (
+          <Box
+            sx={{
+              minHeight: 250,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CircularProgress />
 
-            <h5 className="modal-title">
-              {movie?.title || 'Movie Details'}
-            </h5>
-
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-              aria-label="Close"
-            ></button>
-
-          </div>
-
-          {/* Body */}
-
-          <div className="modal-body">
-
-            {loading && (
-              <div className="loading-container">
-
-                <div
-                  className="spinner-border"
-                  role="status"
-                >
-                  <span className="visually-hidden">
-                    Loading...
-                  </span>
-                </div>
-
-                <p className="mt-3 text-muted">
-                  Loading movie details...
-                </p>
-
-              </div>
-            )}
-
-            {error && (
-              <div
-                className="alert alert-danger"
-                role="alert"
-              >
-                {error}
-              </div>
-            )}
-
-            {movie &&
-              !loading &&
-              !error && (
-                <MovieContent movie={movie} />
-              )}
-
-          </div>
-
-          {/* Footer */}
-
-          <div className="modal-footer">
-
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={onClose}
+            <Typography
+              color="text.secondary"
+              sx={{
+                marginTop: 2,
+              }}
             >
-              Close
-            </button>
+              Loading movie details...
+            </Typography>
+          </Box>
+        )}
 
-          </div>
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              marginTop: 1,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
 
-        </div>
-      </div>
-    </div>
+        {movie &&
+          !loading &&
+          !error && (
+            <MovieContent movie={movie} />
+          )}
+      </DialogContent>
+
+      <DialogActions>
+        <Button
+          onClick={onClose}
+          variant="contained"
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
@@ -102,7 +116,6 @@ function MovieContent({ movie }) {
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : null;
 
-  // Find a YouTube trailer
   const trailer =
     movie.videos?.results?.find(
       (video) =>
@@ -117,160 +130,247 @@ function MovieContent({ movie }) {
     : 'N/A';
 
   return (
-    <div className="row g-4">
-
-      {/* Poster */}
-
-      <div className="col-md-4">
-
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          md: '280px 1fr',
+        },
+        gap: 4,
+        paddingTop: 1,
+      }}
+    >
+      <Box>
         {posterUrl ? (
-          <img
+          <Box
+            component="img"
             src={posterUrl}
             alt={movie.title}
-            className="img-fluid rounded shadow movie-modal-poster"
+            sx={{
+              width: '100%',
+              maxHeight: {
+                xs: 500,
+                md: 600,
+              },
+              objectFit: 'cover',
+              borderRadius: 2,
+              display: 'block',
+            }}
           />
         ) : (
-          <div
-            className="bg-secondary-subtle rounded d-flex align-items-center justify-content-center"
-            style={{
-              minHeight: '500px',
+          <Box
+            sx={{
+              minHeight: 400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'action.hover',
+              borderRadius: 2,
             }}
           >
-            <span className="text-muted">
+            <Typography color="text.secondary">
               No Poster Available
-            </span>
-          </div>
+            </Typography>
+          </Box>
         )}
+      </Box>
 
-      </div>
-
-      {/* Movie Details */}
-
-      <div className="col-md-8">
-
-        <h2 className="mb-2">
+      <Box>
+        <Typography
+          variant="h4"
+          component="h2"
+          fontWeight={700}
+          gutterBottom
+        >
           {movie.title}
-        </h2>
+        </Typography>
 
         {movie.tagline && (
-          <p className="fst-italic text-muted">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            fontStyle="italic"
+            sx={{
+              marginBottom: 2,
+            }}
+          >
             "{movie.tagline}"
-          </p>
+          </Typography>
         )}
 
-        {/* Basic information */}
-
-        <div className="d-flex flex-wrap gap-3 mb-4">
-
-          <span>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+            marginBottom: 4,
+          }}
+        >
+          <Typography variant="body2">
             📅 {movie.release_date || 'N/A'}
-          </span>
+          </Typography>
 
-          <span>
+          <Typography variant="body2">
             ⭐{' '}
             {movie.vote_average
-              ?.toFixed(1) || 'N/A'}
-          </span>
+              ? movie.vote_average.toFixed(1)
+              : 'N/A'}
+          </Typography>
 
-          <span>
+          <Typography variant="body2">
             ⏱️ {runtime}
-          </span>
+          </Typography>
+        </Box>
 
-        </div>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          gutterBottom
+        >
+          Overview
+        </Typography>
 
-        {/* Overview */}
-
-        <h5>Overview</h5>
-
-        <p className="movie-overview">
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{
+            lineHeight: 1.7,
+          }}
+        >
           {movie.overview ||
             'No overview available.'}
-        </p>
+        </Typography>
 
-        {/* Genres */}
-
-        <h5 className="mt-4">
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          sx={{
+            marginTop: 4,
+            marginBottom: 1.5,
+          }}
+        >
           Genres
-        </h5>
+        </Typography>
 
-        <div className="d-flex flex-wrap gap-2 mb-4">
-
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            marginBottom: 4,
+          }}
+        >
           {movie.genres?.length > 0 ? (
             movie.genres.map((genre) => (
-              <span
+              <Chip
                 key={genre.id}
-                className="badge bg-secondary movie-badge"
-              >
-                {genre.name}
-              </span>
+                label={genre.name}
+                size="small"
+              />
             ))
           ) : (
-            <span className="text-muted">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
               No genres available.
-            </span>
+            </Typography>
           )}
+        </Box>
 
-        </div>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          gutterBottom
+        >
+          Cast
+        </Typography>
 
-        {/* Cast */}
-
-        <h5>Cast</h5>
-
-        <div className="d-flex flex-wrap gap-2">
-
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
           {movie.credits?.cast?.length > 0 ? (
             movie.credits.cast
               .slice(0, 8)
               .map((actor) => (
-                <span
+                <Chip
                   key={actor.id}
-                  className="badge bg-dark movie-badge"
-                >
-                  {actor.name}
-                </span>
+                  label={actor.name}
+                  size="small"
+                  variant="outlined"
+                />
               ))
           ) : (
-            <span className="text-muted">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
               No cast information available.
-            </span>
+            </Typography>
           )}
-
-        </div>
-
-        {/* Trailer */}
+        </Box>
 
         {trailer && (
-          <div className="mt-5">
-
-            <h5 className="mb-3">
+          <Box
+            sx={{
+              marginTop: 5,
+            }}
+          >
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              sx={{
+                marginBottom: 2,
+              }}
+            >
               Trailer
-            </h5>
+            </Typography>
 
-            <div className="ratio ratio-16x9">
-
-              <iframe
+            <Box
+              sx={{
+                position: 'relative',
+                width: '100%',
+                paddingTop: '56.25%',
+                overflow: 'hidden',
+                borderRadius: 2,
+              }}
+            >
+              <Box
+                component="iframe"
                 src={`https://www.youtube.com/embed/${trailer.key}`}
                 title={`${movie.title} trailer`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-              ></iframe>
-
-            </div>
-
-          </div>
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  border: 0,
+                }}
+              />
+            </Box>
+          </Box>
         )}
-
-        {/* No trailer */}
 
         {!trailer && (
-          <div className="alert alert-secondary mt-5">
+          <Alert
+            severity="info"
+            sx={{
+              marginTop: 5,
+            }}
+          >
             No trailer is available for this movie.
-          </div>
+          </Alert>
         )}
-
-      </div>
-
-    </div>
+      </Box>
+    </Box>
   );
 }
 

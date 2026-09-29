@@ -81,11 +81,11 @@ npm run build
 
 ## Live Demo
 
-Coming soon.
+[movie-explorer-eta-seven.vercel.app](https://movie-explorer-eta-seven.vercel.app/)
 
 ## Repository
 
-https://github.com/ayyashzamny/Loons_Lab_Movie_Explorer.git
+[github.com/ayyashzamny/Loons_Lab_Movie_Explorer.git](https://github.com/ayyashzamny/Loons_Lab_Movie_Explorer.git)
 
 ## Author
 

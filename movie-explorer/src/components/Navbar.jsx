@@ -1,5 +1,23 @@
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  IconButton,
+  Tooltip,
+  Divider,
+} from '@mui/material';
 
 import { Link } from 'react-router-dom';
+
+import HomeIcon from '@mui/icons-material/Home';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
+import MovieIcon from '@mui/icons-material/Movie';
 
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,97 +34,245 @@ function Navbar() {
   } = useAuth();
 
   return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-
-      <div className="container">
-
-        <Link
-          className="navbar-brand fw-bold"
+    <AppBar
+      position="sticky"
+      color="default"
+      elevation={0}
+      sx={{
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        backdropFilter: 'blur(12px)',
+        backgroundColor: 'background.paper',
+      }}
+    >
+      <Toolbar
+        sx={{
+          maxWidth: '1400px',
+          width: '100%',
+          margin: '0 auto',
+          minHeight: {
+            xs: 64,
+            sm: 72,
+          },
+          paddingX: {
+            xs: 2,
+            sm: 3,
+            md: 4,
+          },
+        }}
+      >
+        {/* BRAND */}
+        <Box
+          component={Link}
           to="/"
-        >
-          Movie Explorer
-        </Link>
-
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarContent"
-          aria-controls="navbarContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        <div
-          className="collapse navbar-collapse"
-          id="navbarContent"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.2,
+            textDecoration: 'none',
+            color: 'inherit',
+          }}
         >
 
-          <ul className="navbar-nav ms-auto align-items-lg-center">
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 800,
+              letterSpacing: '-0.5px',
+              display: {
+                xs: 'none',
+                sm: 'block',
+              },
+            }}
+          >
+            Movie Explorer
+          </Typography>
 
-            {user && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    className="nav-link"
-                    to="/"
-                  >
-                    Home
-                  </Link>
-                </li>
+          {/* Short brand name for mobile */}
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 800,
+              letterSpacing: '-0.5px',
+              display: {
+                xs: 'block',
+                sm: 'none',
+              },
+            }}
+          >
+            Movie
+          </Typography>
+        </Box>
 
-                <li className="nav-item">
-                  <Link
-                    className="nav-link"
-                    to="/favorites"
-                  >
-                    Favorites
-                  </Link>
-                </li>
+        {/* RIGHT SIDE */}
+        <Box
+          sx={{
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: {
+              xs: 0.5,
+              sm: 1,
+            },
+          }}
+        >
+          {user && (
+            <>
+              {/* HOME */}
+              <Tooltip title="Home">
+                <Button
+                  component={Link}
+                  to="/"
+                  color="inherit"
+                  startIcon={<HomeIcon />}
+                  sx={{
+                    display: {
+                      xs: 'none',
+                      sm: 'inline-flex',
+                    },
+                    fontWeight: 600,
+                  }}
+                >
+                  Home
+                </Button>
+              </Tooltip>
 
-                <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
-                  <span className="navbar-text me-3">
-                    Hi, {user.username}
-                  </span>
-                </li>
+              {/* FAVORITES */}
+              <Tooltip title="Favorites">
+                <Button
+                  component={Link}
+                  to="/favorites"
+                  color="inherit"
+                  startIcon={<FavoriteIcon />}
+                  sx={{
+                    display: {
+                      xs: 'none',
+                      sm: 'inline-flex',
+                    },
+                    fontWeight: 600,
+                  }}
+                >
+                  Favorites
+                </Button>
+              </Tooltip>
 
-                <li className="nav-item mt-2 mt-lg-0">
-                  <button
-                    type="button"
-                    className="btn btn-outline-danger"
-                    onClick={logout}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            )}
+              {/* MOBILE HOME */}
+              <Tooltip title="Home">
+                <IconButton
+                  component={Link}
+                  to="/"
+                  color="inherit"
+                  sx={{
+                    display: {
+                      xs: 'flex',
+                      sm: 'none',
+                    },
+                  }}
+                >
+                  <HomeIcon />
+                </IconButton>
+              </Tooltip>
 
-            <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
+              {/* MOBILE FAVORITES */}
+              <Tooltip title="Favorites">
+                <IconButton
+                  component={Link}
+                  to="/favorites"
+                  color="inherit"
+                  sx={{
+                    display: {
+                      xs: 'flex',
+                      sm: 'none',
+                    },
+                  }}
+                >
+                  <FavoriteIcon />
+                </IconButton>
+              </Tooltip>
 
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={toggleTheme}
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  marginX: 1,
+                  display: {
+                    xs: 'none',
+                    sm: 'block',
+                  },
+                }}
+              />
+
+              {/* USER */}
+              <Box
+                sx={{
+                  display: {
+                    xs: 'none',
+                    md: 'flex',
+                  },
+                  alignItems: 'center',
+                  gap: 0.8,
+                  marginX: 1,
+                }}
               >
-                {theme === 'light'
-                  ? 'Dark Mode'
-                  : 'Light Mode'}
-              </button>
+                <PersonIcon
+                  fontSize="small"
+                  color="action"
+                />
 
-            </li>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                >
+                  {user.username}
+                </Typography>
+              </Box>
 
-          </ul>
+              {/* LOGOUT */}
+              <Tooltip title="Logout">
+                <IconButton
+                  onClick={logout}
+                  color="error"
+                  sx={{
+                    marginLeft: {
+                      xs: 0,
+                      sm: 0.5,
+                    },
+                  }}
+                >
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
 
-        </div>
-
-      </div>
-
-    </nav>
+          {/* THEME TOGGLE */}
+          <Tooltip
+            title={
+              theme === 'light'
+                ? 'Switch to dark mode'
+                : 'Switch to light mode'
+            }
+          >
+            <IconButton
+              onClick={toggleTheme}
+              color="inherit"
+              sx={{
+                marginLeft: 0.5,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              {theme === 'light' ? (
+                <DarkModeIcon />
+              ) : (
+                <LightModeIcon />
+              )}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
 
 export default Navbar;
-

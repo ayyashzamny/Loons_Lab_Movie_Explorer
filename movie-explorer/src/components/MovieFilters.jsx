@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
 
 import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+} from '@mui/material';
+
+import {
   getMovieGenres,
 } from '../services/movieService';
 
@@ -80,41 +92,61 @@ function MovieFilters({ onApplyFilters }) {
     selectedRating;
 
   return (
-    <div className="card movie-filters shadow-sm mb-5">
+    <Card
+      elevation={2}
+      sx={{
+        marginBottom: 5,
+      }}
+    >
+      <CardContent
+        sx={{
+          padding: {
+            xs: 2,
+            sm: 3,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            marginBottom: 3,
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            gutterBottom
+          >
+            Filter Movies
+          </Typography>
 
-      <div className="card-body p-4">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
+            Narrow down your movie results
+          </Typography>
+        </Box>
 
-        <div className="d-flex justify-content-between align-items-center mb-4">
-
-          <div>
-            <h5 className="filter-title mb-1">
-              Filter Movies
-            </h5>
-
-            <p className="text-muted mb-0">
-              Narrow down your movie results
-            </p>
-          </div>
-
-        </div>
-
-        <div className="row g-3">
-
-          {/* Genre */}
-
-          <div className="col-12 col-md-4">
-
-            <label
-              htmlFor="genre"
-              className="form-label fw-semibold"
-            >
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: 'repeat(3, 1fr)',
+            },
+            gap: 2,
+          }}
+        >
+          <FormControl fullWidth>
+            <InputLabel id="genre-label">
               Genre
-            </label>
+            </InputLabel>
 
-            <select
+            <Select
+              labelId="genre-label"
               id="genre"
-              className="form-select"
               value={selectedGenre}
+              label="Genre"
               onChange={(event) =>
                 setSelectedGenre(
                   event.target.value
@@ -122,135 +154,123 @@ function MovieFilters({ onApplyFilters }) {
               }
               disabled={isLoadingGenres}
             >
-              <option value="">
+              <MenuItem value="">
                 {isLoadingGenres
                   ? 'Loading genres...'
                   : 'All Genres'}
-              </option>
+              </MenuItem>
 
               {genres.map((genre) => (
-                <option
+                <MenuItem
                   key={genre.id}
                   value={genre.id}
                 >
                   {genre.name}
-                </option>
+                </MenuItem>
               ))}
-            </select>
+            </Select>
+          </FormControl>
 
-          </div>
-
-          {/* Year */}
-
-          <div className="col-12 col-md-4">
-
-            <label
-              htmlFor="year"
-              className="form-label fw-semibold"
-            >
+          <FormControl fullWidth>
+            <InputLabel id="year-label">
               Release Year
-            </label>
+            </InputLabel>
 
-            <select
+            <Select
+              labelId="year-label"
               id="year"
-              className="form-select"
               value={selectedYear}
+              label="Release Year"
               onChange={(event) =>
                 setSelectedYear(
                   event.target.value
                 )
               }
             >
-              <option value="">
+              <MenuItem value="">
                 All Years
-              </option>
+              </MenuItem>
 
               {years.map((year) => (
-                <option
+                <MenuItem
                   key={year}
                   value={year}
                 >
                   {year}
-                </option>
+                </MenuItem>
               ))}
-            </select>
+            </Select>
+          </FormControl>
 
-          </div>
-
-          {/* Rating */}
-
-          <div className="col-12 col-md-4">
-
-            <label
-              htmlFor="rating"
-              className="form-label fw-semibold"
-            >
+          <FormControl fullWidth>
+            <InputLabel id="rating-label">
               Minimum Rating
-            </label>
+            </InputLabel>
 
-            <select
+            <Select
+              labelId="rating-label"
               id="rating"
-              className="form-select"
               value={selectedRating}
+              label="Minimum Rating"
               onChange={(event) =>
                 setSelectedRating(
                   event.target.value
                 )
               }
             >
-              <option value="">
+              <MenuItem value="">
                 Any Rating
-              </option>
+              </MenuItem>
 
-              <option value="5">
+              <MenuItem value="5">
                 5+
-              </option>
+              </MenuItem>
 
-              <option value="6">
+              <MenuItem value="6">
                 6+
-              </option>
+              </MenuItem>
 
-              <option value="7">
+              <MenuItem value="7">
                 7+
-              </option>
+              </MenuItem>
 
-              <option value="8">
+              <MenuItem value="8">
                 8+
-              </option>
+              </MenuItem>
 
-              <option value="9">
+              <MenuItem value="9">
                 9+
-              </option>
-            </select>
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
 
-          </div>
-
-        </div>
-
-        <div className="mt-4 d-flex flex-wrap gap-2">
-
-          <button
-            type="button"
-            className="btn btn-dark"
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            marginTop: 3,
+          }}
+        >
+          <Button
+            variant="contained"
             onClick={handleApply}
           >
             Apply Filters
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
+          <Button
+            variant="outlined"
+            color="inherit"
             onClick={handleClear}
             disabled={!hasFilters}
           >
             Clear Filters
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
 
